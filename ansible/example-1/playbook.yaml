@@ -1,0 +1,72 @@
+- name: Ansible Playbooks
+  hosts: all
+  become: true # Sudo privalage #https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_privilege_escalation.html
+
+  #! Variables
+  vars:
+    # Determine the python interpreter. After that warning message will be gone.
+    ansible_python_interpreter: /usr/bin/python3
+    apt_apps_vm: ['vim', 'htop', 'curl', 'wget', 'git', 'net-tools', 'python3-pip']
+    apt_apps_dollin: ['vim', 'htop', 'curl', 'wget', 'git', 'net-tools']
+  
+  #! The Files which includes variables
+  # vars_files:
+  #   - ./tmp/helloWorld.py
+
+  #! Tasks
+  tasks:
+    #! Copy file hosts with permissions
+    - name: Copy file hosts with permissions
+      ansible.builtin.copy:
+        src: ./inventory.yaml
+        dest: /tmp/hosts_backup
+        mode: '0644'
+    #! Add the user 'bulmust2'
+    - name: Add the user 'bulmust2'
+      ansible.builtin.user:
+        name: bulmust2
+
+    #! Run a shell command
+    - name: Cat a file
+      ansible.builtin.shell: cat /tmp/hosts_backup
+      register: cat_hosts_backup
+
+    #! Debug the output of the shell command
+    - name: Debug the output of the shell command
+      ansible.builtin.debug:
+        var: cat_hosts_backup.stdout
+
+    #! Apt Related
+    # Upgrade all apt packages
+    - name: Upgrade all apt packages
+      apt:
+        force_apt_get: true
+        upgrade: safe
+    
+    # Install the 'Vim' package with the 'apt' module
+    # - name: Install 'Vim' package
+    #   apt:
+    #     name: vim
+    #     state: present
+    #   become: true
+    
+    # Install apt packages only if the hostname is bulmust
+    - name: Install apt packages
+      apt:
+        name: "{{ apt_apps_vm }}"
+        state: present
+      #become: true 
+      when: ansible_hostname == 'bulmust'
+    
+    # Clean up the apt cache
+    - name: Clean up the apt cache
+      apt:
+        autoclean: yes
+      #become: true
+    
+    # Clean up the unused packages
+    - name: Autoremove unused packages
+      apt:
+        autoremove: yes
+      #register: autoremove_register
+      #become: true

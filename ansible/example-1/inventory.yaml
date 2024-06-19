@@ -1,0 +1,6 @@
+myhosts:
+  hosts:
+    localhost:
+      ansible_connection: local
+      # ansible_host: 192.168.1.9 # If you want to connect to a remote host
+      # http_port: 80 # If you want to define a variable
